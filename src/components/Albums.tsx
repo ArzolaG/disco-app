@@ -2,7 +2,7 @@ import "../styles/albums.css";
 const Albums = () => {
     return (
         <section className="p-8">
-            <div className="flex gap-20">
+            <div className="flex gap-20 max-w-[1600px]">
                 <div className="w-full">
                     <img src="/images/rhcp/bssm.webp" alt="BSSM" />
                     <p>Blood Sugar Sex Magik</p>
