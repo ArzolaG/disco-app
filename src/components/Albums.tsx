@@ -1,28 +1,84 @@
+import { useEffect, useState } from "react";
 import "../styles/albums.css";
-const Albums = () => {
+
+type AlbumsProps = {
+    searchTerm: string;
+};
+
+const Albums = ({ searchTerm }: AlbumsProps) => {
+    const [artist, setArtist] = useState("");
+    const [albums, setAlbums] = useState([]);
+
+    const getToken = async () => {
+        const clientId = "id1";
+        const clientSecret = "id2";
+
+        const response = await fetch("https://accounts.spotify.com/api/token", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                Authorization: "Basic " + btoa(`${clientId}:${clientSecret}`), // Encode credentials
+            },
+            body: "grant_type=client_credentials",
+        });
+
+        const data = await response.json();
+        return data.access_token; // Return the access token
+    };
+
+    const getArtist = async () => {
+        try {
+            const token = await getToken();
+            const response = await fetch(`https://api.spotify.com/v1/search?q=${searchTerm}&type=artist`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setArtist(data.artists.items[0].href);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const getAlbums = async () => {
+        try {
+            const token = await getToken();
+            const response = await fetch(`${artist}/albums`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // console.log(data);
+                setAlbums(data.items);
+            }
+            console.log(albums);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    useEffect(() => {
+        getArtist();
+        getAlbums();
+    }, [searchTerm]);
+
     return (
         <section className="p-8">
-            <div className="flex gap-20 max-w-[1600px]">
-                <div className="w-full">
-                    <img src="/images/rhcp/bssm.webp" alt="BSSM" />
-                    <p>Blood Sugar Sex Magik</p>
-                    <span>1991</span>
-                </div>
-                <div className="w-full">
-                    <img src="/images/rhcp/bytheway.webp" alt="BSSM" />
-                    <p>By The Way</p>
-                    <span>2002</span>
-                </div>
-                <div className="w-full">
-                    <img src="/images/rhcp/californication.webp" alt="BSSM" />
-                    <p>Californication</p>
-                    <span>1999</span>
-                </div>
-                <div className="w-full">
-                    <img src="/images/rhcp/unlimited-love.webp" alt="BSSM" />
-                    <p>Unlimited Love</p>
-                    <span>2022</span>
-                </div>
+            <div className="grid grid-cols-5 gap-20">
+                {albums?.map((album: any) => {
+                    return (
+                        <>
+                            <img src={`${album.images[0].url}`} alt="Test" />
+                        </>
+                    );
+                })}
             </div>
         </section>
     );
